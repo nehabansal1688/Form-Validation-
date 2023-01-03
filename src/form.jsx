@@ -104,7 +104,6 @@ const Form = () => {
           Submit
         </button>
       </form>
-      <h3>{errorMsgs.name}</h3>
     </>
   );
 };
