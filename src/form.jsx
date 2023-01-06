@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
+import * as validation from './validations';
 const Form = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -7,18 +7,37 @@ const Form = () => {
     password: '',
   });
   const [errorMsgs, setErrorMsg] = useState({
-    name: '',
-    email: '',
-    password: '',
+    name: null,
+    email: null,
+    password: null,
   });
+  const [isValid, setIsValid] = useState(false);
+
+  useEffect(() => {
+    setFormValidity();
+  }, [JSON.stringify(errorMsgs)]);
+
+  // useEffect(() => {
+  //   setFormValidity();
+  // }, [...Object.values(errorMsgs)]);
+
   const handleInputChange = (event) => {
     event.preventDefault();
-    debugger;
-    //const isFormValid = validateFormFields(event);
+    const { name, value } = event.target;
     setFormData((values) => ({
       ...values,
-      [event.target.name]: event.target.value,
+      [name]: value,
     }));
+  };
+
+  const setFormValidity = () => {
+    let isValid = true;
+    Object.keys(errorMsgs).forEach((key) => {
+      if (errorMsgs[key] !== '') {
+        isValid = false;
+      }
+    });
+    setIsValid(isValid);
   };
 
   const validateFormFields = (event) => {
@@ -26,24 +45,22 @@ const Form = () => {
     let errorMsg = '';
     switch (name) {
       case 'name':
-        errorMsg =
-          value.length < 3 || value.trim().length < 1
-            ? 'name should be min 4 chars'
-            : '';
+        const isValid =
+          validation.isNotNullAndUndefined(value) &&
+          validation.hasMinChars(value, 4);
+        errorMsg = isValid ? '' : 'name should be min 4 chars';
         setErrorMsg({ ...errorMsgs, name: errorMsg });
         break;
       case 'email':
-        errorMsg =
-          value.length < 6 || value.trim().length < 1
-            ? 'enter valid email address'
-            : '';
+        errorMsg = validation.hasMinChars(value, 6)
+          ? ''
+          : 'enter valid email address';
         setErrorMsg({ ...errorMsgs, email: errorMsg });
         break;
       case 'password':
-        errorMsg =
-          value.length < 5 || value.trim().length < 1
-            ? 'password should be min 5 chars'
-            : '';
+        errorMsg = validation.hasMinChars(value, 5)
+          ? ''
+          : 'password should be min 5 chars';
         setErrorMsg({ ...errorMsgs, password: errorMsg });
         break;
       default:
@@ -100,7 +117,7 @@ const Form = () => {
             {<span className="text-danger">{errorMsgs.password}</span>}
           </label>
         </div>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" disabled={!isValid} class="btn btn-primary">
           Submit
         </button>
       </form>
